@@ -91,4 +91,79 @@
 ---
 
 ## 彩色变换
+* 变换公式
+    * $g(x,y)=T(f(x,y)]$
+    * 理论上，任何变换都可在任何彩色模型中执行。但实际上，某些操作对特定的模型比较适用(简洁)
+* 补色
+    * 在彩色环上，与色调直接相对的另一端被称为补色
+    * 补色对于增强嵌在彩色图像暗区的细节很有用
+<div align="center"><img src="img/img9.png" alt="Image" style="zoom:70%;" /></div>
+
+* 彩色分层
+    * 突出图像中某个特定彩色区域，对从周围分离出目标物体很有用
+    * 彩色变换函数比灰度变换函数复杂得多，故采用把某些感兴趣区域之外的彩色映射为不突出的无确定性质的颜色（制定一个中心点和一个范围）
+        * $s_i=\left\{\begin{array}{rl}0.5 &,[|r_j-a_j|>\frac{W}{2}]_{1\leq j\leq n}\\r_i&,others\end{array}\right. i=1, 2, ...,n$
+        * $s_i=\left\{\begin{array}{rl}0.5 &,\sum^n_{j=1}(r_j-a_j)^2>R_0^2\\r_i&,others\end{array}\right. i=1, 2, ...,n$
+* 色调和彩色矫正
+    * 一幅图像的色调范围是指颜色强度的基本分布，高主调图像的多数信息集中在高强度处，低主调图像的颜色主要位于低亮度处
+    * 色调变换
+        * 概念：实验性地调整图像亮度和对比度，以便在合适的灰度范围内提供最多的细节
+        * 彩色本身并不改变，在 RGB 和 CMY(k) 空间中，这意味着使用相同的变换函数映射所有的3个（或4个）彩色分量；在 HSI 彩色空间中，则改进了亮度分量
+    * 彩色平衡
+        * 在调整一幅图像的彩色分量时，要认识到每个操作都会影响到图像的全部彩色平衡
+        * 基于彩色环可以预测一个彩色分量如何影响其他彩色分量
+        * 任何颜色的比例都可以通过减小图像中相对色的数量来增大
+* 直方图处理
+    * 单独对彩色图像的分量进行直方图均衡通常是不明智的，会产生不正确的彩色，而应当均匀地展开这种彩色灰度，保持色调不变
+    * 而有时虽然没有改变图像的色调以及饱和度的值，但是会影响图像的整体颜色感观
+
+---
+
+## 平滑和锐化
+* 彩色图像平滑
+    * 灰度图像平滑可以推广到彩色图像处理上
+    * 邻域平滑可以在每个彩色平面的基础上分别执行，其结果与使用 RGB 彩色向量执行平均是相同的
+    * 通过对 HSI 模型中的亮度分量执行平均得到不同的结果
+* 彩色图像锐化
+    * 与灰度图像一样，同样采取拉普拉斯变换方法对图像进行锐化
+    * 同样可对 RGB 模型分量或 HSI 模型分量进行锐化，得到不同的结果
+
+---
+
+## 基于彩色的图像分割
+* HSI 彩色空间的分割
+    * 一般为了在色调图像中分离出感兴趣的孤立区域，将饱和度用做一幅模版图像
+    <div align="center"><img src="img/img10.png" alt="Image" style="zoom:80%;" /></div>
+* RGB 向量空间中的分割
+    * 给定感兴趣的有代表性彩色的样点集，得到平均彩色用$a$表示
+    * 相似性度量，比较空间任一点$z$与$a$的距离
+        * 欧式距离（轨迹是球体）：$D(z,a)=||z-a||$
+        * 马氏距离（轨迹是椭球体）：$D(z,a)=[(z-a)^TC^{-1}(z-a)]^{\frac{1}{2}}$
+        * 边界盒（避免开方运算）：$D(z,a)=z-a$
+<div align="center"><img src="img/img11.png" alt="Image" style="zoom:80%;" /></div>
+
+* 彩色边缘检测
+    * 单独处理 RGB 三个分量的梯度图像再合成可能会导致错误的结果
+    * 对于标量函数，梯度是坐标点指向 f 的最大变化率的方向
+    * $u=\frac{\partial R}{\partial x}r+\frac{\partial G}{\partial x}g+\frac{\partial B}{\partial x}b, v=\frac{\partial R}{\partial y}r+\frac{\partial G}{\partial y}g+\frac{\partial B}{\partial y}b$
+    * $\begin{array}{l}g_{xx}=u\cdot u=u^Tu=|\frac{\partial R}{\partial x}|^2+|\frac{\partial G}{\partial x}|^2+|\frac{\partial B}{\partial x}|^2\\g_{yy}=v\cdot v=v^Tv=|\frac{\partial R}{\partial y}|^2+|\frac{\partial G}{\partial y}|^2+|\frac{\partial B}{\partial y}|^2\\g_{xy}=u\cdot v=u^Tv=\frac{\partial R}{\partial x}\frac{\partial R}{\partial y}+\frac{\partial G}{\partial x}\frac{\partial G}{\partial y}+\frac{\partial B}{\partial x}\frac{\partial B}{\partial y}\end{array}$
+    * 可以证明 $c(x, y)$ 方向上的最大变化率的值由以下角度给出  
+        $\theta(x,y)=\frac{1}{2}arctan[\frac{2g_{xy}}{g_{xx}-g_{yy}}]$
+    * 且在该角度方向上的变化率的值由下式给出  
+        $F_{\theta}(x,y)=\{\frac{1}{2}[(g_{xx}+g_{yy}+)+(g_{xx}-g_{yy})cos2\theta(x,y)+2g_{xy}sin2\theta(x,y)]\}^{\frac{1}{2}}$ 
+
+---
+
+## 彩色图像中的噪声
+* 通常，彩色图像的噪声内容在每个彩色通道中具有相同的特性，但噪声对不同彩色通道所造成的影响不同；不同的噪声水平像是由每个彩色通道的相对照射强度的差异造成的
+* 将 RGB 三个通道均匀带噪图像转换为 HSI 模型后可以看出噪声图像的色调与饱和度分量明显降质了，这分别是由转换函数中求余弦与取最小值操作的非线性造成的；而强度分量比 3 个带噪声的 RGB 分量图像中的任何一个都要平滑一些，这是由亮度图像是RGB图像的平均这一事实造成的
+<div align="center"><img src="img/img12.png" alt="Image" style="zoom:60%;" /></div>
+
+* 在仅有一个 RGB 通道受噪声影响的情况下，到 HSI 的转换才将噪声扩散到所有 HSI 分量图像
+
+---
+
+## 彩色图像压缩
+* 压缩是减少或消除冗余和不相干数据的处理
+*  因为描述彩色所要求的比特数比描述灰度级所要求的比特数大 3 ~ 4 倍，所以数据压缩在存储和传输彩色图像中起着核心的作用
 
